@@ -1,9 +1,9 @@
 from config import MAX_CHARACTERS
-from functions.validation import validate_file
+from functions.validation import valid_path
 
 
 def get_file_content(working_directory: str, file_path: str) -> str:
-    valid_file = validate_file(working_directory, file_path)
+    valid_file = valid_path(working_directory, file_path, "read_file")
     if not valid_file[0]:
         return valid_file[1]
     try:

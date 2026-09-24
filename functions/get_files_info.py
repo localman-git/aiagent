@@ -1,10 +1,10 @@
 import os
 
-from functions.validation import validate_dir
+from functions.validation import valid_path
 
 
 def get_files_info(working_directory: str, directory: str = ".") -> str:
-    valid_dir = validate_dir(working_directory, directory)
+    valid_dir = valid_path(working_directory, directory, "list_dir")
     if not valid_dir[0]:
         return valid_dir[1]
     try:

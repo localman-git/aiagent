@@ -1,10 +1,10 @@
 import os
 
-from functions.validation import validate_write_file
+from functions.validation import valid_path
 
 
 def write_file(working_directory: str, file_path: str, content: str) -> str:
-    valid_write_path = validate_write_file(working_directory, file_path)
+    valid_write_path = valid_path(working_directory, file_path, "write_file")
     if not valid_write_path[0]:
         return valid_write_path[1]
     try:

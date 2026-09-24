@@ -1,41 +1,45 @@
 import os
 
 
-def validate_dir(working_directory: str, directory: str = ".") -> tuple[str | None, str]:
+def valid_path(working_directory: str, path: str, validation_type: str) -> tuple[str | None, str]:
     try:
         working_dir_abs = os.path.abspath(working_directory)
-        target_dir = os.path.normpath(os.path.join(working_dir_abs, directory))
-        valid_target_dir = os.path.commonpath([target_dir, working_dir_abs]) == working_dir_abs
-        if not valid_target_dir:
-            return (None, f'Error: Cannot list "{directory}" as it is outside the permitted working directory.')
-        if not os.path.isdir(target_dir):
-            return (None, f'Error: "{directory}" is not a directory.')
-        return (target_dir, f'Success: "{directory}" is within the working directory.')
+        target = os.path.normpath(os.path.join(working_dir_abs, path))
+        valid_target = os.path.commonpath([target, working_dir_abs]) == working_dir_abs
+        target_dir = os.path.isdir(target)
+        target_file = os.path.isfile(target)
+
+        if validation_type == "list_dir":
+            if not valid_target:
+                return (None, f'Error: Cannot list "{path}" as it is outside the permitted working directory.')
+            if not target_dir:
+                return (None, f'Error: "{path}" is not a directory.')
+            return (target, f'Success: "{path}" is within the working directory. Reading directory contents...')
+
+        if validation_type == "read_file":
+            if not valid_target:
+                return (None, f'Error: Cannot read "{path}" as it is outside the permitted working directory.')
+            if not target_file:
+                return (None, f'Error: File not found or is not a regular file: "{path}".')
+            return (target, f'Success: "{path}" has been found and can be read. Reading file contents...')
+
+        if validation_type == "write_file":
+            if not valid_target:
+                return (None, f'Error: Cannot write to "{path}" as it is outside the permitted working directory.')
+            if target_dir:
+                return (None, f'Error: Cannot write to "{path}" as it is a directory.')
+            return (target, f'Success: "{path}" is valid and can be written to. Writing file contents...')
+
+        if validation_type == "run_python":
+            if not valid_target:
+                return (None, f'Error: Cannot execute "{path}" as it is outside the permitted working directory.')
+            if not target_file:
+                return (None, f'Error: "{path}" does not exist or is not a regular file.')
+            if not target.endswith(".py"):
+                return (None, f'Error: "{path}" is not a Python file.')
+            return (target, f'Success: "{path}" is a valid python file and can be executed. Executing python file...')
+
     except (ValueError, TypeError, OSError) as e:
         return (None, f"Error: {e}")
 
-def validate_file(working_directory: str, file_path: str) -> tuple[str | None, str]:
-    try:
-        working_dir_abs = os.path.abspath(working_directory)
-        target_file = os.path.normpath(os.path.join(working_dir_abs, file_path))
-        valid_target_file = os.path.commonpath([target_file, working_dir_abs]) == working_dir_abs
-        if not valid_target_file:
-            return (None, f'Error: Cannot read "{file_path}" as it is outside the permitted working directory.')
-        if not os.path.isfile(target_file):
-            return (None, f'Error: File not found or is not a regular file: "{file_path}".')
-        return (target_file, f'Success: "{file_path}" has been found and can be read.')
-    except (ValueError, TypeError, OSError) as e:
-        return (None, f"Error: {e}")
-
-def validate_write_file(working_directory: str, file_path: str) -> tuple[str | None, str]:
-    try:
-        working_dir_abs = os.path.abspath(working_directory)
-        target_file = os.path.normpath(os.path.join(working_dir_abs, file_path))
-        valid_target_file = os.path.commonpath([target_file, working_dir_abs]) == working_dir_abs
-        if not valid_target_file:
-            return (None, f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory.')
-        if os.path.isdir(target_file):
-            return (None, f'Error: Cannot write to "{file_path}" as it is a directory.')
-        return (target_file, f'Success: "{file_path}" is valid and can be written to.')
-    except (ValueError, TypeError, OSError) as e:
-        return (None, f"Error: {e}")
+    return (None, f"Error: {validation_type} validation failed without exception.")
